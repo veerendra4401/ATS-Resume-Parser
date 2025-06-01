@@ -1,91 +1,51 @@
-# ATS Resume Parser & Job Portal
+<h1 align="center">🚀 ATS Resume Parser 🎯</h1>
 
-A modern Applicant Tracking System with resume parsing capabilities and job portal functionality.
+<p align="center">
+  <img src="https://img.shields.io/badge/Spring%20Boot-Backend-green?style=flat-square&logo=springboot" />
+  <img src="https://img.shields.io/badge/React-Frontend-blue?style=flat-square&logo=react" />
+  <img src="https://img.shields.io/badge/MySQL-Database-orange?style=flat-square&logo=mysql" />
+</p>
 
-## Features
+<p align="center">
+  💼 Extract structured data from resumes like a pro! <br/>
+  ⚙️ Automate, Analyze, and Accelerate your recruitment process with NLP & AI.
+</p>
 
-- Resume parsing with skill extraction using Stanford NLP
-- Job posting and application management
-- Employer dashboard
-- Candidate skill matching with job requirements
-- User authentication and authorization
-- RESTful API integration
+---
 
-## Tech Stack
+## 🌟 Features
 
-### Backend
-- Spring Boot 3.1.x
-- Java 17
-- Stanford NLP
-- MySQL 8.0
-- Spring Security
-- Spring Data JPA
+✨ **Smart Resume Parsing** — Extracts Name, Email, Phone, Skills, Education, and Experience using NLP  
+🔎 **Keyword & Skill Extraction** — Matches skills from resumes with job descriptions  
+📄 **Upload and Preview** — Upload `.pdf` resumes and preview structured results  
+📦 **Export to JSON / XML** — Download parsed data for integration  
+🗃 **MySQL Storage** — All resume data stored securely in a MySQL database  
+🖥 **Spring Boot REST API** — Handles parsing, storage, and retrieval  
+⚛ **React Frontend** — Clean and modern interface for recruiters to upload resumes and view results  
 
-### Frontend
-- React 18
-- JavaScript
-- Material-UI (MUI)
-- Redux Toolkit
-- Axios
-- React Router
+---
 
-## Project Structure
+## 🧠 Tech Stack
 
-```
-resume/
-├── backend/           # Spring Boot application
-└── frontend/         # React application
-```
+| Layer     | Tech Used                                   |
+|-----------|---------------------------------------------|
+| Frontend  | React.js, Axios, Tailwind CSS (optional)    |
+| Backend   | Java, Spring Boot, REST API                 |
+| NLP       | Stanford CoreNLP, Regex-based preprocessing |
+| Database  | MySQL                                       |
 
-## Prerequisites
+---
 
-- Java 17 or higher
-- Node.js 18 or higher
-- MySQL 8.0
-- Maven
+## 📸 UI Preview
 
-## Setup Instructions
+> Coming Soon: Include screenshots/gifs of your frontend here!
 
-### Backend Setup
+---
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+## 🚀 Getting Started
 
-2. Install dependencies:
-   ```bash
-   mvn install
-   ```
+### ⚙ Backend Setup (Spring Boot)
 
-3. Configure MySQL database in `application.properties`
-
-4. Run the application:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-
-## API Documentation
-
-The API documentation is available at `http://localhost:8080/swagger-ui.html` when running the backend server.
-
-## License
-
-MIT License 
+```bash
+git clone https://github.com/veerendra4401/ATS-Resume-Parser.git
+cd ATS-Resume-Parser/backend
