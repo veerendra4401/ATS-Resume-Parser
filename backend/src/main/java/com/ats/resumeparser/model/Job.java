@@ -21,11 +21,10 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    @NotBlank
     private String description;
 
     @ManyToOne
@@ -37,20 +36,17 @@ public class Job {
     @Column(name = "skill")
     private List<String> requiredSkills = new ArrayList<>();
 
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
-    private List<JobApplication> applications = new ArrayList<>();
-
     private String location;
-    private String type; // FULL_TIME, PART_TIME, CONTRACT
-    private String experienceLevel; // ENTRY, MID, SENIOR
+    private String experienceLevel;
     private Double salaryRangeStart;
     private Double salaryRangeEnd;
-    private String currency;
-    
     private boolean active = true;
-    
-    @Column(name = "application_deadline")
-    private LocalDateTime applicationDeadline;
+
+    @Transient
+    private double matchScore;
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
+    private List<JobApplication> applications = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

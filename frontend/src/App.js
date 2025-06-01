@@ -116,7 +116,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
-          <div className="App">
+    <div className="App">
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
@@ -128,7 +128,7 @@ function App() {
               <Route path="/upload-resume" element={<ResumeUpload />} />
               <Route path="/profile" element={<Profile />} />
             </Routes>
-          </div>
+    </div>
         </Router>
       </ThemeProvider>
     </Provider>

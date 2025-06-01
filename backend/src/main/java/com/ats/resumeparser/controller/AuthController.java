@@ -69,6 +69,9 @@ public class AuthController {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             log.debug("Password encoded successfully");
 
+            // Set email as verified (since we're not implementing email verification now)
+            user.setEmailVerified(true);
+
             // Save user
             User savedUser = userRepository.save(user);
             log.info("Successfully saved user with ID: {}", savedUser.getId());
@@ -94,19 +97,29 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
         try {
-            log.info("Login attempt for email: {}", loginRequest.get("email"));
+            String email = loginRequest.get("email");
+            log.info("Login attempt for email: {}", email);
             
+            // Check if user exists first
+            if (!userRepository.existsByEmail(email)) {
+                log.warn("Login failed: User not found with email: {}", email);
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid email or password");
+            }
+
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    loginRequest.get("email"),
+                    email,
                     loginRequest.get("password")
                 )
             );
+            log.info("Authentication successful for user: {}", email);
 
             // Get user from authentication
             User user = (User) authentication.getPrincipal();
-            log.info("User authenticated successfully: {}", user.getEmail());
+            log.info("User retrieved successfully: {}", user.getEmail());
 
             // Generate token
             String token = tokenProvider.generateToken(user);
@@ -119,7 +132,7 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Login failed: ", e);
+            log.error("Login failed with error: ", e);
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body("Invalid email or password");

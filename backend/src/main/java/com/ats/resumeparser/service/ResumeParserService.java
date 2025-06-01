@@ -1,10 +1,13 @@
 package com.ats.resumeparser.service;
 
 import com.ats.resumeparser.model.Resume;
+import com.ats.resumeparser.model.Resume.Education;
+import com.ats.resumeparser.model.Resume.Experience;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.CoreDocument;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -14,162 +17,163 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class ResumeParserService {
 
     private final StanfordCoreNLP pipeline;
     private final Set<String> commonSkills;
-
-    public ResumeParserService() {
-        // Initialize NLP pipeline
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner");
-        props.setProperty("ner.model", "edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
-        this.pipeline = new StanfordCoreNLP(props);
-
-        // Initialize common skills (you can load this from a file or database)
-        this.commonSkills = new HashSet<>(Arrays.asList(
-            "java", "python", "javascript", "react", "angular", "vue", "node.js", "spring",
-            "hibernate", "mysql", "postgresql", "mongodb", "docker", "kubernetes", "aws",
-            "azure", "git", "jenkins", "junit", "selenium", "agile", "scrum"
-        ));
-    }
+    private final Set<String> educationKeywords;
+    private final Set<String> experienceKeywords;
 
     public Resume parseResume(MultipartFile file) throws IOException {
-        log.info("Starting resume parsing for file: {}", file.getOriginalFilename());
-        
-        try {
-            String content = extractText(file);
-            log.debug("Successfully extracted text content from file");
-            
-            Resume resume = new Resume();
-            resume.setFileName(file.getOriginalFilename());
-            resume.setFileType(file.getContentType());
-            resume.setRawText(content);
+        String content = extractText(file);
+        Resume resume = new Resume();
+        resume.setFileName(file.getOriginalFilename());
+        resume.setFileType(file.getContentType());
+        resume.setRawText(content);
 
-            // Extract skills
-            log.debug("Extracting skills from content");
-            Set<String> skills = extractSkills(content);
-            resume.setSkills(new ArrayList<>(skills));
-            log.debug("Found {} skills", skills.size());
+        // Extract information
+        resume.setSkills(extractSkills(content));
+        resume.setEducation(extractEducation(content));
+        resume.setExperiences(extractExperience(content));
 
-            // Extract experience
-            log.debug("Extracting experience information");
-            List<Resume.Experience> experiences = extractExperience(content);
-            resume.setExperiences(experiences);
-            log.debug("Found {} experience entries", experiences.size());
-
-            // Extract education
-            log.debug("Extracting education information");
-            List<Resume.Education> education = extractEducation(content);
-            resume.setEducation(education);
-            log.debug("Found {} education entries", education.size());
-
-            log.info("Successfully parsed resume");
-            return resume;
-        } catch (Exception e) {
-            log.error("Error parsing resume: ", e);
-            throw e;
-        }
+        return resume;
     }
 
     private String extractText(MultipartFile file) throws IOException {
-        String contentType = file.getContentType();
-        log.debug("Extracting text from file of type: {}", contentType);
-        
-        try (InputStream input = file.getInputStream()) {
-            if (contentType.equals("application/pdf")) {
-                try (PDDocument document = PDDocument.load(input)) {
-                    PDFTextStripper stripper = new PDFTextStripper();
-                    String text = stripper.getText(document);
-                    log.debug("Successfully extracted text from PDF");
-                    return text;
-                }
-            } else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
-                try (XWPFDocument document = new XWPFDocument(input)) {
-                    XWPFWordExtractor extractor = new XWPFWordExtractor(document);
-                    String text = extractor.getText();
-                    log.debug("Successfully extracted text from Word document");
-                    return text;
-                }
-            }
-            throw new IllegalArgumentException("Unsupported file type: " + contentType);
-        } catch (Exception e) {
-            log.error("Error extracting text from file: ", e);
-            throw e;
+        String fileName = file.getOriginalFilename().toLowerCase();
+        if (fileName.endsWith(".pdf")) {
+            return extractPdfText(file);
+        } else if (fileName.endsWith(".docx")) {
+            return extractDocxText(file);
+        } else if (fileName.endsWith(".doc")) {
+            return extractDocText(file);
+        } else {
+            throw new IllegalArgumentException("Unsupported file format");
         }
     }
 
-    private Set<String> extractSkills(String content) {
-        Set<String> skills = new HashSet<>();
-        String[] words = content.toLowerCase().split("\\W+");
-        
-        for (String word : words) {
-            if (commonSkills.contains(word)) {
-                skills.add(word);
-            }
+    private String extractPdfText(MultipartFile file) throws IOException {
+        try (PDDocument document = PDDocument.load(file.getInputStream())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            return stripper.getText(document);
         }
+    }
 
-        // Use NLP for additional skill extraction
+    private String extractDocxText(MultipartFile file) throws IOException {
+        try (XWPFDocument document = new XWPFDocument(file.getInputStream())) {
+            XWPFWordExtractor extractor = new XWPFWordExtractor(document);
+            return extractor.getText();
+        }
+    }
+
+    private String extractDocText(MultipartFile file) throws IOException {
+        // Add support for .doc files using Apache POI HWPF
+        throw new UnsupportedOperationException("DOC format not supported yet");
+    }
+
+    private List<String> extractSkills(String content) {
+        Set<String> extractedSkills = new HashSet<>();
+        
+        // NLP-based skill extraction
         CoreDocument document = new CoreDocument(content);
         pipeline.annotate(document);
 
         for (CoreLabel token : document.tokens()) {
-            String ner = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
-            if (ner.equals("ORGANIZATION") || ner.equals("MISC")) {
-                String potential = token.word().toLowerCase();
-                if (commonSkills.contains(potential)) {
-                    skills.add(potential);
-                }
+            String word = token.word().toLowerCase();
+            if (commonSkills.contains(word)) {
+                extractedSkills.add(word);
             }
         }
 
-        return skills;
-    }
-
-    private List<Resume.Experience> extractExperience(String content) {
-        List<Resume.Experience> experiences = new ArrayList<>();
-        
-        // Pattern for experience extraction (simplified)
-        Pattern pattern = Pattern.compile(
-            "(?i)(\\b\\d{4}\\s*-\\s*(\\d{4}|present|current)\\b).*?\\b(at|@)?\\s*([A-Za-z0-9\\s&.,]+?)\\s*(?=\\d{4}|$)",
-            Pattern.DOTALL
-        );
-
-        Matcher matcher = pattern.matcher(content);
-        while (matcher.find()) {
-            Resume.Experience exp = new Resume.Experience();
-            exp.setCompany(matcher.group(4).trim());
-            exp.setDescription(matcher.group(0).trim());
-            experiences.add(exp);
+        // Pattern-based skill extraction
+        for (String skill : commonSkills) {
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(skill) + "\\b", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(content);
+            if (matcher.find()) {
+                extractedSkills.add(skill);
+            }
         }
 
-        return experiences;
+        return new ArrayList<>(extractedSkills);
     }
 
-    private List<Resume.Education> extractEducation(String content) {
-        List<Resume.Education> educationList = new ArrayList<>();
+    private List<Education> extractEducation(String content) {
+        List<Education> educationList = new ArrayList<>();
         
-        // Pattern for education extraction (simplified)
-        Pattern pattern = Pattern.compile(
-            "(?i)(bachelor|master|phd|b\\.?tech|m\\.?tech|b\\.?e|m\\.?e)\\s*(?:of|in)?\\s*([^\\n,]*)",
+        // Use regex patterns to extract education information
+        Pattern eduPattern = Pattern.compile(
+            "(?i)(Bachelor|Master|PhD|B\\.?[A-Za-z]*|M\\.?[A-Za-z]*|Ph\\.?D)\\.?\\s+" +
+            "(?:of|in)?\\s+" +
+            "([^,\\n]*)" +
+            "(?:,|\\sat\\s|\\sfrom\\s)\\s+" +
+            "([^,\\n]*)" +
+            "(?:,\\s*(\\d{4}))?",
             Pattern.MULTILINE
         );
 
-        Matcher matcher = pattern.matcher(content);
+        Matcher matcher = eduPattern.matcher(content);
         while (matcher.find()) {
-            Resume.Education edu = new Resume.Education();
-            edu.setDegree(matcher.group(1).trim());
-            edu.setField(matcher.group(2).trim());
-            educationList.add(edu);
+            Education education = new Education();
+            education.setDegree(matcher.group(1));
+            education.setField(matcher.group(2));
+            education.setInstitution(matcher.group(3));
+            if (matcher.group(4) != null) {
+                education.setGraduationYear(Integer.parseInt(matcher.group(4)));
+            }
+            educationList.add(education);
         }
 
         return educationList;
+    }
+
+    private List<Experience> extractExperience(String content) {
+        List<Experience> experiences = new ArrayList<>();
+        
+        // Use regex patterns to extract work experience
+        Pattern expPattern = Pattern.compile(
+            "(?i)(.*?)\\s+at\\s+(.*?)\\s*" +
+            "(?:from\\s+(\\d{2}/\\d{2}/\\d{4}|\\d{4})\\s*(?:to\\s+(\\d{2}/\\d{2}/\\d{4}|\\d{4}|present))?)?",
+            Pattern.MULTILINE
+        );
+
+        Matcher matcher = expPattern.matcher(content);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        while (matcher.find()) {
+            Experience experience = new Experience();
+            experience.setTitle(matcher.group(1));
+            experience.setCompany(matcher.group(2));
+            
+            if (matcher.group(3) != null) {
+                try {
+                    experience.setStartDate(LocalDateTime.parse(matcher.group(3), formatter));
+                } catch (Exception e) {
+                    log.warn("Could not parse start date: {}", matcher.group(3));
+                }
+            }
+            
+            if (matcher.group(4) != null && !matcher.group(4).equalsIgnoreCase("present")) {
+                try {
+                    experience.setEndDate(LocalDateTime.parse(matcher.group(4), formatter));
+                } catch (Exception e) {
+                    log.warn("Could not parse end date: {}", matcher.group(4));
+                }
+            } else {
+                experience.setCurrent(true);
+            }
+            
+            experiences.add(experience);
+        }
+
+        return experiences;
     }
 } 

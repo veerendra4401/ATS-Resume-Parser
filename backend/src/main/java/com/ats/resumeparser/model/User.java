@@ -43,6 +43,9 @@ public class User implements UserDetails {
     @NotBlank
     private String password;
 
+    @Column(name = "company_name")
+    private String companyName;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -54,6 +57,45 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL)
     private List<JobApplication> jobApplications = new ArrayList<>();
+
+    private boolean emailVerified = false;
+    
+    @Column(name = "email_verification_token")
+    private String emailVerificationToken;
+    
+    @Column(name = "email_verification_token_expiry")
+    private LocalDateTime emailVerificationTokenExpiry;
+    
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+    
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
+    @Column(name = "profile_completion_percentage")
+    private Integer profileCompletionPercentage = 0;
+
+    @ElementCollection
+    @CollectionTable(name = "user_skills", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "skill")
+    private List<String> skills = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "user_preferences", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "preference")
+    private List<String> jobPreferences = new ArrayList<>();
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String location;
+    private String phoneNumber;
+    private String linkedinUrl;
+    private String githubUrl;
+    private String portfolioUrl;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

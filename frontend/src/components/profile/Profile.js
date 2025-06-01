@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Container,
@@ -14,6 +14,13 @@ import {
   CircularProgress,
   Card,
   CardContent,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -22,7 +29,15 @@ import {
   LocationOn as LocationIcon,
   Work as WorkIcon,
   School as SchoolIcon,
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  LinkedIn as LinkedInIcon,
+  GitHub as GitHubIcon,
+  Language as LanguageIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
+import { updateProfile, uploadResume } from '../../redux/actions/userActions';
 
 const Profile = () => {
   const user = useSelector((state) => state.auth.user);
@@ -30,6 +45,9 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [openSkillDialog, setOpenSkillDialog] = useState(false);
+  const [newSkill, setNewSkill] = useState('');
+  const [uploadingResume, setUploadingResume] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -38,9 +56,10 @@ const Profile = () => {
     location: user?.location || '',
     title: user?.title || '',
     company: user?.company || '',
-    education: user?.education || '',
-    skills: user?.skills || '',
-    experience: user?.experience || '',
+    bio: user?.bio || '',
+    linkedinUrl: user?.linkedinUrl || '',
+    githubUrl: user?.githubUrl || '',
+    portfolioUrl: user?.portfolioUrl || '',
   });
 
   const handleChange = (e) => {
@@ -58,13 +77,47 @@ const Profile = () => {
     setSuccess(false);
 
     try {
-      // TODO: Implement profile update API call
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated API call
+      await dispatch(updateProfile(formData));
       setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err.message || 'Failed to update profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.trim()) {
+      dispatch(updateProfile({
+        ...formData,
+        skills: [...(user.skills || []), newSkill.trim()],
+      }));
+      setNewSkill('');
+      setOpenSkillDialog(false);
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove) => {
+    dispatch(updateProfile({
+      ...formData,
+      skills: user.skills.filter(skill => skill !== skillToRemove),
+    }));
+  };
+
+  const handleResumeUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadingResume(true);
+    try {
+      await dispatch(uploadResume(file));
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.message || 'Failed to upload resume');
+    } finally {
+      setUploadingResume(false);
     }
   };
 
@@ -85,17 +138,40 @@ const Profile = () => {
               gap: 3,
             }}
           >
-            <Avatar
-              sx={{
-                width: 100,
-                height: 100,
-                bgcolor: 'white',
-                color: 'primary.main',
-                fontSize: '2.5rem',
-              }}
-            >
-              {user?.firstName?.charAt(0)}
-            </Avatar>
+            <Box sx={{ position: 'relative' }}>
+              <Avatar
+                sx={{
+                  width: 100,
+                  height: 100,
+                  bgcolor: 'white',
+                  color: 'primary.main',
+                  fontSize: '2.5rem',
+                }}
+              >
+                {user?.firstName?.charAt(0)}
+              </Avatar>
+              <input
+                accept="image/*"
+                type="file"
+                id="avatar-upload"
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="avatar-upload">
+                <IconButton
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'primary.dark' },
+                  }}
+                  component="span"
+                >
+                  <EditIcon />
+                </IconButton>
+              </label>
+            </Box>
             <Box>
               <Typography variant="h4" gutterBottom>
                 {user?.firstName} {user?.lastName}
@@ -198,35 +274,48 @@ const Profile = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Education"
-                    name="education"
-                    value={formData.education}
-                    onChange={handleChange}
-                    multiline
-                    rows={2}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Skills"
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleChange}
-                    multiline
-                    rows={2}
-                    helperText="Enter your skills separated by commas"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Experience"
-                    name="experience"
-                    value={formData.experience}
+                    label="Bio"
+                    name="bio"
+                    value={formData.bio}
                     onChange={handleChange}
                     multiline
                     rows={4}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="LinkedIn URL"
+                    name="linkedinUrl"
+                    value={formData.linkedinUrl}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: <LinkedInIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="GitHub URL"
+                    name="githubUrl"
+                    value={formData.githubUrl}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: <GitHubIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Portfolio URL"
+                    name="portfolioUrl"
+                    value={formData.portfolioUrl}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: <LanguageIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -252,38 +341,71 @@ const Profile = () => {
 
         {/* Profile Summary */}
         <Grid item xs={12} md={4}>
+          {/* Skills Card */}
           <Card sx={{ mb: 3 }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Profile Summary
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography>
-                    {user?.firstName} {user?.lastName}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <EmailIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography>{user?.email}</Typography>
-                </Box>
-                {user?.phone && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <PhoneIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography>{user.phone}</Typography>
-                  </Box>
-                )}
-                {user?.location && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <LocationIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography>{user.location}</Typography>
-                  </Box>
-                )}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">Skills</Typography>
+                <Tooltip title="Add Skill">
+                  <IconButton onClick={() => setOpenSkillDialog(true)} color="primary">
+                    <AddIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {user?.skills?.map((skill) => (
+                  <Chip
+                    key={skill}
+                    label={skill}
+                    onDelete={() => handleRemoveSkill(skill)}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
               </Box>
             </CardContent>
           </Card>
 
+          {/* Resume Upload Card */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Resume
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                <input
+                  accept=".pdf,.doc,.docx"
+                  type="file"
+                  id="resume-upload"
+                  style={{ display: 'none' }}
+                  onChange={handleResumeUpload}
+                />
+                <label htmlFor="resume-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    startIcon={<CloudUploadIcon />}
+                    fullWidth
+                    disabled={uploadingResume}
+                  >
+                    {uploadingResume ? 'Uploading...' : 'Upload Resume'}
+                  </Button>
+                </label>
+              </Box>
+              {user?.resumes?.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Latest Resume:
+                  </Typography>
+                  <Typography>
+                    {user.resumes[user.resumes.length - 1].fileName}
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Profile Completion Card */}
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -292,7 +414,7 @@ const Profile = () => {
               <Box sx={{ position: 'relative', display: 'inline-flex', my: 2 }}>
                 <CircularProgress
                   variant="determinate"
-                  value={75}
+                  value={user?.profileCompletionPercentage || 0}
                   size={80}
                   thickness={4}
                 />
@@ -309,7 +431,7 @@ const Profile = () => {
                   }}
                 >
                   <Typography variant="h6" component="div" color="primary">
-                    75%
+                    {user?.profileCompletionPercentage || 0}%
                   </Typography>
                 </Box>
               </Box>
@@ -320,6 +442,27 @@ const Profile = () => {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Add Skill Dialog */}
+      <Dialog open={openSkillDialog} onClose={() => setOpenSkillDialog(false)}>
+        <DialogTitle>Add New Skill</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Skill"
+            fullWidth
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenSkillDialog(false)}>Cancel</Button>
+          <Button onClick={handleAddSkill} color="primary">
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
