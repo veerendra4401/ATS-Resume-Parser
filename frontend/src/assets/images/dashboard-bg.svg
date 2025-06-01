@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440" height="400" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <path d="M0 0h1440v400H0z" fill="#2563eb"/>
+  
+  <!-- Abstract Shapes -->
+  <path
+    d="M1440 100C1360 100 1280 50 1200 50C1120 50 1040 100 960 100C880 100 800 50 720 50C640 50 560 100 480 100C400 100 320 50 240 50C160 50 80 100 0 100V0h1440v100z"
+    fill="#60a5fa"
+    fill-opacity="0.2"
+  />
+  <path
+    d="M1440 200C1360 200 1280 150 1200 150C1120 150 1040 200 960 200C880 200 800 150 720 150C640 150 560 200 480 200C400 200 320 150 240 150C160 150 80 200 0 200V400h1440V200z"
+    fill="#1d4ed8"
+    fill-opacity="0.4"
+  />
+  
+  <!-- Dots Pattern -->
+  <g fill="#fff" fill-opacity="0.1">
+    <circle cx="100" cy="50" r="2"/>
+    <circle cx="300" cy="50" r="2"/>
+    <circle cx="500" cy="50" r="2"/>
+    <circle cx="700" cy="50" r="2"/>
+    <circle cx="900" cy="50" r="2"/>
+    <circle cx="1100" cy="50" r="2"/>
+    <circle cx="1300" cy="50" r="2"/>
+    
+    <circle cx="200" cy="100" r="2"/>
+    <circle cx="400" cy="100" r="2"/>
+    <circle cx="600" cy="100" r="2"/>
+    <circle cx="800" cy="100" r="2"/>
+    <circle cx="1000" cy="100" r="2"/>
+    <circle cx="1200" cy="100" r="2"/>
+    <circle cx="1400" cy="100" r="2"/>
+    
+    <circle cx="100" cy="150" r="2"/>
+    <circle cx="300" cy="150" r="2"/>
+    <circle cx="500" cy="150" r="2"/>
+    <circle cx="700" cy="150" r="2"/>
+    <circle cx="900" cy="150" r="2"/>
+    <circle cx="1100" cy="150" r="2"/>
+    <circle cx="1300" cy="150" r="2"/>
+  </g>
+  
+  <!-- Highlight Lines -->
+  <line x1="0" y1="300" x2="1440" y2="300" stroke="#fff" stroke-opacity="0.1" stroke-width="1"/>
+  <line x1="0" y1="350" x2="1440" y2="350" stroke="#fff" stroke-opacity="0.1" stroke-width="1"/>
+</svg> 

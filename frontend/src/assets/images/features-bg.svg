@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440" height="600" viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wave Pattern -->
+  <path
+    d="M0 0h1440v600H0z"
+    fill="#f8fafc"
+  />
+  <path
+    d="M1440 27.4774C1352.89 19.7883 1147.56 2.0652 1000 2.0652C850 2.0652 800 27.4774 650 27.4774C500 27.4774 450 2.0652 300 2.0652C150 2.0652 -98 27.4774 -98 27.4774V600h1538V27.4774z"
+    fill="#60a5fa"
+    fill-opacity="0.1"
+  />
+  <path
+    d="M1440 52.9549C1352.89 45.2658 1147.56 27.5427 1000 27.5427C850 27.5427 800 52.9549 650 52.9549C500 52.9549 450 27.5427 300 27.5427C150 27.5427 -98 52.9549 -98 52.9549V600h1538V52.9549z"
+    fill="#2563eb"
+    fill-opacity="0.05"
+  />
+  
+  <!-- Grid Pattern -->
+  <path
+    d="M0 50h1440v2H0zM0 150h1440v2H0zM0 250h1440v2H0zM0 350h1440v2H0zM0 450h1440v2H0zM0 550h1440v2H0z"
+    fill="#2563eb"
+    fill-opacity="0.05"
+  />
+  <path
+    d="M50 0v600h2V0zM250 0v600h2V0zM450 0v600h2V0zM650 0v600h2V0zM850 0v600h2V0zM1050 0v600h2V0zM1250 0v600h2V0z"
+    fill="#2563eb"
+    fill-opacity="0.05"
+  />
+  
+  <!-- Decorative Circles -->
+  <circle cx="100" cy="100" r="8" fill="#2563eb" fill-opacity="0.2"/>
+  <circle cx="1340" cy="500" r="8" fill="#2563eb" fill-opacity="0.2"/>
+  <circle cx="700" cy="300" r="8" fill="#2563eb" fill-opacity="0.2"/>
+  <circle cx="200" cy="400" r="8" fill="#2563eb" fill-opacity="0.2"/>
+  <circle cx="1200" cy="200" r="8" fill="#2563eb" fill-opacity="0.2"/>
+</svg> 
