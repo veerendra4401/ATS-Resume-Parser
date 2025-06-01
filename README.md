@@ -23,7 +23,7 @@ A modern Applicant Tracking System with resume parsing capabilities and job port
 
 ### Frontend
 - React 18
-- TypeScript
+- JavaScript
 - Material-UI (MUI)
 - Redux Toolkit
 - Axios
