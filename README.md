@@ -11,6 +11,11 @@
   ⚙️ Automate, Analyze, and Accelerate your recruitment process with NLP & AI.
 </p>
 
+<p align="center">
+  🚀 An AI-powered Resume Parser that extracts structured data from uploaded resumes using NLP & Regex.<br/>
+  📈 Built for ATS (Applicant Tracking Systems) to streamline hiring and decision-making.
+</p>
+
 ---
 
 ## 🌟 Features
